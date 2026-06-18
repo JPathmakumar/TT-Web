@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Trash Titans – </title>
+<title>Trash Titans – Smart Compost AI · 2026</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -17,9 +17,7 @@
   }
 
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
   html { scroll-behavior: smooth; }
-
   body {
     font-family: 'DM Sans', sans-serif;
     background: var(--dark);
@@ -27,221 +25,250 @@
     overflow-x: hidden;
   }
 
+  /* ─── LOADING SCREEN ─── */
+  #tt-loader {
+    position: fixed; inset: 0; z-index: 9999;
+    background: #080820;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    transition: opacity 0.7s ease, visibility 0.7s ease;
+  }
+  #tt-loader.hidden {
+    opacity: 0; visibility: hidden; pointer-events: none;
+  }
+
+  .lt-grid {
+    position: absolute; inset: 0;
+    background-image: radial-gradient(rgba(255,255,255,0.12) 1px, transparent 1px);
+    background-size: 20px 20px;
+    animation: ltGridFade 1.5s ease forwards;
+  }
+  @keyframes ltGridFade { from { opacity: 0; } to { opacity: 1; } }
+
+  .lt-scanline {
+    position: absolute; left: 0; right: 0;
+    height: 2px; background: var(--green); opacity: 0.5;
+    animation: ltScan 3s linear infinite;
+  }
+  @keyframes ltScan { 0% { top: 0%; } 100% { top: 100%; } }
+
+  .lt-orbs {
+    position: absolute; inset: 0; pointer-events: none; z-index: 1; overflow: hidden;
+  }
+  .lt-orb {
+    position: absolute; border-radius: 50%;
+    background: rgba(26, 26, 255, 0.2);
+    animation: ltOrbRise linear infinite;
+  }
+  @keyframes ltOrbRise {
+    0%   { transform: translateY(110vh) scale(0.6); opacity: 0; }
+    10%  { opacity: 1; }
+    90%  { opacity: 0.4; }
+    100% { transform: translateY(-20vh) scale(1.1); opacity: 0; }
+  }
+
+  .lt-core {
+    position: relative; z-index: 2;
+    display: flex; flex-direction: column;
+    align-items: center; gap: 1.8rem;
+  }
+
+  .lt-eyebrow {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem; letter-spacing: 0.3em;
+    text-transform: uppercase; color: var(--green);
+    margin-bottom: -1rem;
+    animation: ltUp 0.6s 0.1s both;
+  }
+
+  .lt-robot {
+    width: 92px; height: 92px;
+    background: var(--green); border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 3.2rem; color: var(--dark);
+    animation: ltRobotPulse 1.6s ease-in-out infinite, ltUp 0.6s 0.2s both;
+  }
+  @keyframes ltRobotPulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(0,255,136,0.5); transform: scale(1); }
+    50%       { box-shadow: 0 0 0 20px rgba(0,255,136,0); transform: scale(1.05); }
+  }
+
+  .lt-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(3rem, 9vw, 4.5rem);
+    letter-spacing: 0.1em; line-height: 0.95;
+    color: var(--white); text-align: center;
+    animation: ltUp 0.7s 0.35s both;
+  }
+  .lt-title em { font-style: normal; color: var(--green); }
+
+  .lt-status {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem; letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.45);
+    min-height: 1.2em; text-align: center;
+    transition: opacity 0.25s ease;
+    animation: ltUp 0.6s 0.6s both;
+  }
+
+  .lt-bar-wrap {
+    width: 260px; height: 3px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 99px; overflow: hidden;
+    animation: ltUp 0.6s 0.7s both;
+  }
+  .lt-bar {
+    height: 100%; width: 0%;
+    background: var(--green); border-radius: 99px;
+    box-shadow: 0 0 14px rgba(0,255,136,0.7);
+    transition: width 0.12s linear;
+  }
+
+  .lt-pct {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.68rem; color: var(--green);
+    letter-spacing: 0.1em;
+    animation: ltUp 0.6s 0.7s both;
+  }
+
+  @keyframes ltUp {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
   /* ─── NAV ─── */
   nav {
     position: fixed; top: 0; left: 0; right: 0; z-index: 100;
     display: flex; align-items: center; justify-content: space-between;
-    padding: 0 2.5rem;
-    height: 64px;
-    background: rgba(8,8,32,0.7);
+    padding: 0 2.5rem; height: 64px;
+    background: rgba(8,8,32,0.75);
     backdrop-filter: blur(14px);
     border-bottom: 1px solid rgba(255,255,255,0.07);
   }
-
   .nav-logo {
     display: flex; align-items: center; gap: .7rem;
     font-family: 'Bebas Neue', sans-serif;
     font-size: 1.4rem; letter-spacing: .12em;
-    color: var(--white);
-    text-decoration: none;
+    color: var(--white); text-decoration: none;
   }
-
   .nav-logo .robot-icon {
     width: 36px; height: 36px;
-    background: var(--green);
-    border-radius: 6px;
+    background: var(--green); border-radius: 6px;
     display: grid; place-items: center;
-    font-size: 1.2rem;
-    color: var(--dark);
-    flex-shrink: 0;
+    font-size: 1.2rem; color: var(--dark); flex-shrink: 0;
   }
-
-  .nav-links {
-    display: flex; gap: 2.5rem; list-style: none;
-  }
-
+  .nav-links { display: flex; gap: 2.5rem; list-style: none; }
   .nav-links a {
-    color: rgba(255,255,255,0.75);
-    text-decoration: none;
-    font-size: .9rem;
-    letter-spacing: .04em;
-    transition: color .2s;
-    position: relative;
+    color: rgba(255,255,255,0.75); text-decoration: none;
+    font-size: .9rem; letter-spacing: .04em;
+    transition: color .2s; position: relative;
   }
-
   .nav-links a::after {
     content: ''; position: absolute; left: 0; bottom: -4px;
-    width: 0; height: 2px;
-    background: var(--green);
-    transition: width .25s;
+    width: 0; height: 2px; background: var(--green); transition: width .25s;
   }
-
   .nav-links a:hover { color: var(--white); }
   .nav-links a:hover::after { width: 100%; }
-
   .nav-cta {
-    background: var(--blue-light);
-    color: var(--white) !important;
-    padding: .55rem 1.3rem;
-    border-radius: 4px;
-    font-weight: 600;
-    font-size: .85rem !important;
-    letter-spacing: .06em;
-    text-decoration: none;
+    background: var(--blue-light); color: var(--white) !important;
+    padding: .55rem 1.3rem; border-radius: 4px;
+    font-weight: 600; font-size: .85rem !important;
+    letter-spacing: .06em; text-decoration: none;
     transition: background .2s, transform .15s;
   }
-
   .nav-cta:hover { background: var(--green) !important; color: var(--dark) !important; transform: translateY(-1px); }
   .nav-cta::after { display: none !important; }
 
   /* ─── HERO ─── */
   #hero {
-    position: relative;
-    min-height: 100vh;
-    display: flex; flex-direction: column; justify-content: center; align-items: center;
-    text-align: center;
-    overflow: hidden;
-    padding-top: 64px;
+    position: relative; min-height: 100vh;
+    display: flex; flex-direction: column;
+    justify-content: center; align-items: center;
+    text-align: center; overflow: hidden; padding-top: 64px;
   }
-
   .hero-bg {
     position: absolute; inset: 0;
     background: linear-gradient(135deg, #0d0d8a 0%, #1a1aff 45%, #2d2dcc 70%, #0a0a60 100%);
     z-index: 0;
   }
-
-  /* dot-grid pattern */
   .hero-bg::before {
-    content: '';
-    position: absolute; inset: 0;
+    content: ''; position: absolute; inset: 0;
     background-image: radial-gradient(rgba(255,255,255,0.18) 1px, transparent 1px);
-    background-size: 18px 18px;
-    z-index: 1;
+    background-size: 18px 18px; z-index: 1;
   }
-
-  /* globe-like fade overlay */
   .hero-bg::after {
-    content: '';
-    position: absolute; inset: 0;
+    content: ''; position: absolute; inset: 0;
     background: radial-gradient(ellipse 80% 60% at 70% 40%,
-      rgba(255,255,255,0.09) 0%,
-      rgba(100,100,255,0.12) 30%,
-      transparent 70%);
+      rgba(255,255,255,0.09) 0%, rgba(100,100,255,0.12) 30%, transparent 70%);
     z-index: 2;
   }
-
   .scanline {
-    position: absolute;
-    left: 0; right: 0;
-    height: 2px;
-    background: var(--green);
-    opacity: .6;
-    z-index: 5;
+    position: absolute; left: 0; right: 0; height: 2px;
+    background: var(--green); opacity: .6; z-index: 5;
     animation: scan 6s linear infinite;
   }
-
   @keyframes scan {
     0%   { top: 10%; opacity: .6; }
     50%  { opacity: .2; }
     100% { top: 90%; opacity: .6; }
   }
-
   .hero-content {
     position: relative; z-index: 10;
-    max-width: 900px;
-    padding: 0 2rem;
+    max-width: 900px; padding: 0 2rem;
   }
-
   .hero-eyebrow {
     font-family: 'Space Mono', monospace;
-    font-size: .72rem;
-    letter-spacing: .3em;
-    text-transform: uppercase;
-    color: var(--green);
+    font-size: .72rem; letter-spacing: .3em;
+    text-transform: uppercase; color: var(--green);
     margin-bottom: 1.6rem;
-    opacity: 0;
-    animation: fadeUp .7s .3s forwards;
+    opacity: 0; animation: fadeUp .7s .3s forwards;
   }
-
   .hero-title {
     font-family: 'Bebas Neue', sans-serif;
     font-size: clamp(4rem, 11vw, 9rem);
-    line-height: .95;
-    letter-spacing: .03em;
-    color: var(--white);
-    opacity: 0;
-    animation: fadeUp .8s .5s forwards;
+    line-height: .95; letter-spacing: .03em; color: var(--white);
+    opacity: 0; animation: fadeUp .8s .5s forwards;
   }
-
-  .hero-title em {
-    font-style: normal;
-    color: var(--green);
-  }
-
+  .hero-title em { font-style: normal; color: var(--green); }
   .hero-sub {
-    margin-top: 2rem;
-    font-size: 1.1rem;
-    line-height: 1.65;
-    color: rgba(255,255,255,0.78);
-    max-width: 560px;
+    margin-top: 2rem; font-size: 1.1rem; line-height: 1.65;
+    color: rgba(255,255,255,0.78); max-width: 560px;
     margin-left: auto; margin-right: auto;
-    opacity: 0;
-    animation: fadeUp .8s .75s forwards;
+    opacity: 0; animation: fadeUp .8s .75s forwards;
   }
-
   .hero-actions {
     margin-top: 2.8rem;
     display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;
-    opacity: 0;
-    animation: fadeUp .8s 1s forwards;
+    opacity: 0; animation: fadeUp .8s 1s forwards;
   }
-
   .btn-primary {
-    display: inline-block;
-    background: var(--green);
-    color: var(--dark);
-    font-weight: 700;
-    font-size: .95rem;
-    letter-spacing: .06em;
-    padding: .85rem 2.2rem;
-    border-radius: 4px;
-    text-decoration: none;
+    display: inline-block; background: var(--green); color: var(--dark);
+    font-weight: 700; font-size: .95rem; letter-spacing: .06em;
+    padding: .85rem 2.2rem; border-radius: 4px; text-decoration: none;
     transition: transform .2s, box-shadow .2s;
     box-shadow: 0 0 24px rgba(0,255,136,0.4);
   }
-
   .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 0 36px rgba(0,255,136,0.6); }
-
   .btn-outline {
-    display: inline-block;
-    border: 2px solid rgba(255,255,255,0.4);
-    color: var(--white);
-    font-size: .95rem;
-    letter-spacing: .06em;
-    padding: .82rem 2.2rem;
-    border-radius: 4px;
-    text-decoration: none;
+    display: inline-block; border: 2px solid rgba(255,255,255,0.4);
+    color: var(--white); font-size: .95rem; letter-spacing: .06em;
+    padding: .82rem 2.2rem; border-radius: 4px; text-decoration: none;
     transition: border-color .2s, background .2s;
   }
-
   .btn-outline:hover { border-color: var(--white); background: rgba(255,255,255,0.06); }
-
   @keyframes fadeUp {
     from { opacity: 0; transform: translateY(24px); }
     to   { opacity: 1; transform: translateY(0); }
   }
-
-  /* scroll hint */
   .scroll-hint {
     position: absolute; bottom: 2.5rem; left: 50%; transform: translateX(-50%);
-    z-index: 10;
-    display: flex; flex-direction: column; align-items: center; gap: .5rem;
+    z-index: 10; display: flex; flex-direction: column;
+    align-items: center; gap: .5rem;
     font-family: 'Space Mono', monospace;
     font-size: .65rem; letter-spacing: .2em; color: rgba(255,255,255,0.45);
-    opacity: 0;
-    animation: fadeUp .6s 1.4s forwards;
+    opacity: 0; animation: fadeUp .6s 1.4s forwards;
   }
-
   .scroll-hint .chevron {
     width: 18px; height: 18px;
     border-right: 2px solid rgba(255,255,255,0.4);
@@ -249,7 +276,6 @@
     transform: rotate(45deg);
     animation: bounce 1.4s ease-in-out infinite;
   }
-
   @keyframes bounce {
     0%, 100% { transform: rotate(45deg) translateY(0); }
     50%       { transform: rotate(45deg) translateY(5px); }
@@ -257,190 +283,140 @@
 
   /* ─── SECTION COMMON ─── */
   section { padding: 7rem 2rem; }
-
   .section-label {
-    font-family: 'Space Mono', monospace;
-    font-size: .7rem;
-    letter-spacing: .3em;
-    text-transform: uppercase;
-    color: var(--green);
-    margin-bottom: 1rem;
+    font-family: 'Space Mono', monospace; font-size: .7rem;
+    letter-spacing: .3em; text-transform: uppercase;
+    color: var(--green); margin-bottom: 1rem;
   }
-
   .section-title {
     font-family: 'Bebas Neue', sans-serif;
     font-size: clamp(2.8rem, 6vw, 5rem);
-    line-height: 1;
-    letter-spacing: .03em;
-    margin-bottom: 1.5rem;
+    line-height: 1; letter-spacing: .03em; margin-bottom: 1.5rem;
   }
-
   .section-body {
-    font-size: 1.05rem;
-    line-height: 1.75;
-    color: rgba(255,255,255,0.72);
-    max-width: 580px;
+    font-size: 1.05rem; line-height: 1.75;
+    color: rgba(255,255,255,0.72); max-width: 580px;
   }
 
   /* ─── ABOUT ─── */
   #about {
     background: #0b0b26;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 5rem;
-    align-items: center;
-    max-width: 1200px;
-    margin: 0 auto;
-    border-radius: 0;
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 5rem; align-items: center;
+    max-width: 1200px; margin: 0 auto;
   }
-
-  .about-visual {
-    position: relative;
-  }
-
-  .team-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem;
-  }
-
+  .team-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
   .team-card {
     background: linear-gradient(135deg, rgba(26,26,255,0.3), rgba(26,26,200,0.1));
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 10px;
-    padding: 1.6rem 1.2rem;
-    text-align: center;
+    border: 1px solid rgba(255,255,255,0.1); border-radius: 10px;
+    padding: 1.6rem 1.2rem; text-align: center;
     transition: border-color .25s, transform .25s;
-    position: relative;
-    overflow: hidden;
+    position: relative; overflow: hidden;
   }
-
   .team-card::before {
     content: ''; position: absolute; top: 0; left: 0; right: 0;
-    height: 3px;
-    background: var(--green);
-    transform: scaleX(0);
-    transition: transform .3s;
+    height: 3px; background: var(--green);
+    transform: scaleX(0); transition: transform .3s;
   }
-
   .team-card:hover { border-color: rgba(0,255,136,0.3); transform: translateY(-4px); }
   .team-card:hover::before { transform: scaleX(1); }
-
   .team-card .emoji { font-size: 2rem; margin-bottom: .6rem; display: block; }
   .team-card .name {
     font-family: 'Bebas Neue', sans-serif;
-    font-size: 1.2rem; letter-spacing: .07em;
-    color: var(--white);
+    font-size: 1.2rem; letter-spacing: .07em; color: var(--white);
   }
   .team-card .role {
     font-size: .78rem; color: var(--green);
     font-family: 'Space Mono', monospace;
     letter-spacing: .1em; margin-top: .2rem;
   }
-
   .team-card.wide { grid-column: span 2; }
 
-  /* ─── WHAT WE DO ─── */
+  /* ─── PLATFORM ─── */
   #platform {
-    background: #080820;
-    max-width: 1200px;
-    margin: 0 auto;
-    text-align: center;
+    background: #080820; max-width: 1200px; margin: 0 auto; text-align: center;
   }
-
-  #platform .section-label, #platform .section-title, #platform .section-body {
-    margin-left: auto; margin-right: auto;
-    text-align: center;
-  }
-
+  #platform .section-label,
+  #platform .section-title,
+  #platform .section-body { margin-left: auto; margin-right: auto; text-align: center; }
   .features-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1.5rem;
-    margin-top: 4rem;
-    text-align: left;
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem; margin-top: 4rem; text-align: left;
   }
-
   .feature-card {
-    background: rgba(26,26,100,0.25);
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 12px;
-    padding: 2rem 1.6rem;
+    background: rgba(26,26,100,0.25); border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px; padding: 2rem 1.6rem;
     transition: border-color .25s, transform .25s, background .25s;
-    position: relative;
-    overflow: hidden;
+    position: relative; overflow: hidden;
   }
-
   .feature-card::after {
-    content: '';
-    position: absolute; inset: 0;
+    content: ''; position: absolute; inset: 0;
     background: linear-gradient(135deg, rgba(0,255,136,0.04), transparent);
-    opacity: 0;
-    transition: opacity .3s;
+    opacity: 0; transition: opacity .3s;
   }
-
   .feature-card:hover {
-    border-color: rgba(0,255,136,0.25);
-    transform: translateY(-5px);
+    border-color: rgba(0,255,136,0.25); transform: translateY(-5px);
     background: rgba(26,26,120,0.35);
   }
-
   .feature-card:hover::after { opacity: 1; }
-
   .feature-icon {
     width: 48px; height: 48px;
-    background: rgba(0,255,136,0.12);
-    border-radius: 10px;
+    background: rgba(0,255,136,0.12); border-radius: 10px;
     display: grid; place-items: center;
-    font-size: 1.5rem;
-    margin-bottom: 1.3rem;
+    font-size: 1.5rem; margin-bottom: 1.3rem;
   }
-
   .feature-title {
     font-family: 'Bebas Neue', sans-serif;
-    font-size: 1.4rem; letter-spacing: .06em;
-    margin-bottom: .6rem;
+    font-size: 1.4rem; letter-spacing: .06em; margin-bottom: .6rem;
   }
+  .feature-desc { font-size: .9rem; line-height: 1.65; color: rgba(255,255,255,0.6); }
 
-  .feature-desc {
-    font-size: .9rem;
-    line-height: 1.65;
-    color: rgba(255,255,255,0.6);
+  /* ─── HOW IT WORKS ─── */
+  #how-it-works { max-width: 1200px; margin: 0 auto; }
+  .workflow-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1.5rem; margin-top: 4rem;
   }
+  .workflow-card {
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 14px; padding: 2rem; transition: 0.3s;
+  }
+  .workflow-card:hover {
+    transform: translateY(-6px); border-color: var(--green);
+    box-shadow: 0 0 30px rgba(0,255,136,0.15);
+  }
+  .workflow-number {
+    width: 45px; height: 45px; border-radius: 50%;
+    background: var(--green); color: #080820;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: bold; margin-bottom: 1rem; font-family: 'Space Mono', monospace;
+  }
+  .workflow-card h3 {
+    font-family: 'Bebas Neue', sans-serif;
+    letter-spacing: .06em; margin-bottom: .8rem; font-size: 1.5rem;
+  }
+  .workflow-card p { color: rgba(255,255,255,0.7); line-height: 1.7; }
 
-  /* ─── CTA BAND ─── */
+  /* ─── CTA ─── */
   #cta {
     background: linear-gradient(135deg, #1a1aff 0%, #0d0d8a 100%);
-    position: relative;
-    overflow: hidden;
-    text-align: center;
+    position: relative; overflow: hidden; text-align: center;
   }
-
   #cta::before {
-    content: '';
-    position: absolute; inset: 0;
+    content: ''; position: absolute; inset: 0;
     background-image: radial-gradient(rgba(255,255,255,0.12) 1px, transparent 1px);
     background-size: 18px 18px;
   }
-
-  .cta-inner {
-    position: relative; z-index: 2;
-    max-width: 700px; margin: 0 auto;
-  }
-
+  .cta-inner { position: relative; z-index: 2; max-width: 700px; margin: 0 auto; }
   #cta .section-title { font-size: clamp(3rem, 7vw, 6rem); }
 
   /* ─── FOOTER ─── */
   footer {
-    background: #050515;
-    padding: 2.5rem 2rem;
-    text-align: center;
-    font-size: .8rem;
+    background: #050515; padding: 2.5rem 2rem;
+    text-align: center; font-size: .8rem;
     color: rgba(255,255,255,0.35);
-    font-family: 'Space Mono', monospace;
-    letter-spacing: .08em;
+    font-family: 'Space Mono', monospace; letter-spacing: .08em;
   }
-
   footer span { color: var(--green); }
 
   /* ─── RESPONSIVE ─── */
@@ -449,35 +425,64 @@
     .features-grid { grid-template-columns: 1fr; }
     .nav-links { display: none; }
   }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+  }
 </style>
 </head>
 <body>
 
-<!-- NAV -->
+<!-- ═══════════════════════════════════════ -->
+<!--            LOADING SCREEN              -->
+<!-- ═══════════════════════════════════════ -->
+<div id="tt-loader" role="status" aria-label="Loading Trash Titans">
+  <div class="lt-grid"></div>
+  <div class="lt-scanline"></div>
+  <div class="lt-orbs" id="ltOrbs"></div>
+
+  <div class="lt-core">
+    <p class="lt-eyebrow">Grade 5 &amp; 6 · Toronto · 2026</p>
+    <div class="lt-robot" aria-hidden="true">🤖</div>
+    <div class="lt-title">TRASH<br><em>TITANS</em></div>
+    <p class="lt-status" id="ltStatus">Initializing systems...</p>
+    <div class="lt-bar-wrap" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="ltProgressBar">
+      <div class="lt-bar" id="ltBar"></div>
+    </div>
+    <span class="lt-pct" id="ltPct" aria-live="polite">0%</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!--                 NAV                    -->
+<!-- ═══════════════════════════════════════ -->
 <nav>
   <a href="#" class="nav-logo">
-    <div class="robot-icon">🤖</div>
+    <div class="robot-icon" aria-hidden="true">🤖</div>
     TRASH TITANS
   </a>
   <ul class="nav-links">
     <li><a href="#hero">Home</a></li>
     <li><a href="#platform">Platform</a></li>
+    <li><a href="#how-it-works">How It Works</a></li>
     <li><a href="#about">About</a></li>
     <li><a href="#cta">Contact</a></li>
   </ul>
   <a href="#cta" class="nav-cta">See How It Works →</a>
 </nav>
 
-<!-- HERO -->
+<!-- ═══════════════════════════════════════ -->
+<!--                 HERO                   -->
+<!-- ═══════════════════════════════════════ -->
 <section id="hero">
   <div class="hero-bg"></div>
   <div class="scanline"></div>
 
   <div class="hero-content">
-    <p class="hero-eyebrow">Grade 5 & 6 · Toronto · 2026</p>
+    <p class="hero-eyebrow">Grade 5 &amp; 6 · Toronto · 2026</p>
     <h1 class="hero-title">The Future of<br><em>Garbage</em><br>Management</h1>
     <p class="hero-sub">
-      Smart compost monitoring powered by AI, an ESP32, and sensors —
+      Smart compost monitoring powered by AI, an Arduino Uno Q, and sensors —
       built by three students who refuse to let waste be a problem.
     </p>
     <div class="hero-actions">
@@ -486,292 +491,207 @@
     </div>
   </div>
 
-  <div class="scroll-hint">
+  <div class="scroll-hint" aria-hidden="true">
     <span>SCROLL</span>
     <div class="chevron"></div>
   </div>
 </section>
 
-<!-- ABOUT -->
+<!-- ═══════════════════════════════════════ -->
+<!--                ABOUT                   -->
+<!-- ═══════════════════════════════════════ -->
 <div style="background:#0b0b26; padding: 7rem 2rem;">
-<section id="about">
-  <div class="about-text">
-    <p class="section-label">About Us</p>
-    <h2 class="section-title">The Next Generation Saving the Earth</h2>
-    <p class="section-body">
-      Hi, we are the Trash Titans! We are students in grade 5 and 6 who are passionate
-      about coding and using technology to solve real-world problems.
-      We believe smart systems and AI can completely change how we handle waste.
-    </p>
-  </div>
+  <section id="about">
+    <div class="about-text">
+      <p class="section-label">About Us</p>
+      <h2 class="section-title">The Next Generation Saving the Earth</h2>
+      <p class="section-body">
+        Hi, we are the Trash Titans! We are students in grade 5 and 6 who are passionate
+        about coding and using technology to solve real-world problems.
+        We believe smart systems and AI can completely change how we handle waste.
+      </p>
+    </div>
 
-  <div class="about-visual">
-    <div class="team-grid">
-      <div class="team-card">
-        <span class="emoji">👑</span>
-        <div class="name">Jonathan</div>
-        <div class="role">The Leader</div>
-      </div>
-      <div class="team-card">
-        <span class="emoji">⚡</span>
-        <div class="name">Ashwin</div>
-        <div class="role">The Prodigy</div>
-      </div>
-      <div class="team-card wide">
-        <span class="emoji">🎨</span>
-        <div class="name">Karikalan</div>
-        <div class="role">The Creative Thinker</div>
+    <div class="about-visual">
+      <div class="team-grid">
+        <div class="team-card">
+          <span class="emoji">👑</span>
+          <div class="name">Jonathan</div>
+          <div class="role">The Leader</div>
+        </div>
+        <div class="team-card">
+          <span class="emoji">⚡</span>
+          <div class="name">Ashwin</div>
+          <div class="role">The Prodigy</div>
+        </div>
+        <div class="team-card wide">
+          <span class="emoji">🎨</span>
+          <div class="name">Karikalan</div>
+          <div class="role">The Creative Thinker</div>
+        </div>
       </div>
     </div>
-  </div>
-</section>
+  </section>
 </div>
 
-<!-- PLATFORM -->
+<!-- ═══════════════════════════════════════ -->
+<!--               PLATFORM                 -->
+<!-- ═══════════════════════════════════════ -->
 <div style="background:#080820; padding: 7rem 2rem;">
-<section id="platform">
-  <p class="section-label">What We Do</p>
-  <h2 class="section-title">Smart Compost, Smarter Planet</h2>
-  <p class="section-body">
-    We built a smart compost monitoring system using an ESP32, AI, and sensors.
-    Our system keeps compost healthy and sends real-time alerts when something's wrong.
-  </p>
+  <section id="platform">
+    <p class="section-label">What We Do</p>
+    <h2 class="section-title">Smart Compost, Smarter Planet</h2>
+    <p class="section-body">
+      We built a smart compost monitoring system using an Arduino Uno Q, AI, and sensors.
+      Our system keeps compost healthy and sends real-time alerts when something's wrong.
+    </p>
 
-  <div class="features-grid">
-    <div class="feature-card">
-      <div class="feature-icon">📡</div>
-      <div class="feature-title">ESP32 + Sensors</div>
-      <p class="feature-desc">
-        Our hardware core — an ESP32 microcontroller reads live moisture, temperature,
-        and other compost data and streams it in real time.
-      </p>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">📡</div>
+        <div class="feature-title">Arduino Uno Q + Sensors</div>
+        <p class="feature-desc">
+          Our hardware core — an Arduino Uno Q reads live moisture, temperature,
+          and other compost data and streams it in real time.
+        </p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🤖</div>
+        <div class="feature-title">AI-Powered Analysis</div>
+        <p class="feature-desc">
+          Artificial intelligence interprets sensor readings to detect unhealthy compost
+          conditions before they become a problem.
+        </p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📲</div>
+        <div class="feature-title">QR Code Scanning</div>
+        <p class="feature-desc">
+          Scan the bin's QR code to instantly know whether it belongs in
+          the compost — no guessing required.
+        </p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">💧</div>
+        <div class="feature-title">Moisture Monitoring</div>
+        <p class="feature-desc">
+          Real-time moisture tracking sends an alert if the compost is too dry or
+          too wet, keeping it in the perfect zone.
+        </p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🚨</div>
+        <div class="feature-title">Smart Alerts</div>
+        <p class="feature-desc">
+          Instant notifications fire if the wrong item is added or if conditions
+          drift outside healthy parameters.
+        </p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🌍</div>
+        <div class="feature-title">Real-World Impact</div>
+        <p class="feature-desc">
+          Less food waste, better compost quality, and a healthier planet —
+          powered by student ingenuity and cutting-edge tech.
+        </p>
+      </div>
     </div>
-    <div class="feature-card">
-      <div class="feature-icon">🤖</div>
-      <div class="feature-title">AI-Powered Analysis</div>
-      <p class="feature-desc">
-        Artificial intelligence interprets sensor readings to detect unhealthy compost
-        conditions before they become a problem.
-      </p>
-    </div>
-    <div class="feature-card">
-      <div class="feature-icon">📲</div>
-      <div class="feature-title">QR Code Scanning</div>
-      <p class="feature-desc">
-        Scan any waste item's QR code to instantly know whether it belongs in
-        the compost — no guessing required.
-      </p>
-    </div>
-    <div class="feature-card">
-      <div class="feature-icon">💧</div>
-      <div class="feature-title">Moisture Monitoring</div>
-      <p class="feature-desc">
-        Real-time moisture tracking sends an alert if the compost is too dry or
-        too wet, keeping it in the perfect zone.
-      </p>
-    </div>
-    <div class="feature-card">
-      <div class="feature-icon">🚨</div>
-      <div class="feature-title">Smart Alerts</div>
-      <p class="feature-desc">
-        Instant notifications fire if the wrong item is added or if conditions
-        drift outside healthy parameters.
-      </p>
-    </div>
-    <div class="feature-card">
-      <div class="feature-icon">🌍</div>
-      <div class="feature-title">Real-World Impact</div>
-      <p class="feature-desc">
-        Less food waste, better compost quality, and a healthier planet —
-        powered by student ingenuity and cutting-edge tech.
-      </p>
-    </div>
-  </div>
-</section>
+  </section>
 </div>
 
-
-<!-- ============================= -->
-<!-- FULL AI SMART SYSTEM SECTION -->
-<!-- ============================= -->
-
+<!-- ═══════════════════════════════════════ -->
+<!--            HOW IT WORKS                -->
+<!-- ═══════════════════════════════════════ -->
 <div style="background:#0a0a24; padding: 7rem 2rem;">
+  <section id="how-it-works">
+    <p class="section-label">Full AI Smart System</p>
+    <h2 class="section-title">How Trash Titans 2026 Works</h2>
+    <p class="section-body">
+      A full AI-powered smart waste management platform that combines QR scanning,
+      Edge Impulse AI, compost monitoring, servo motor automation, live dashboards, and smart alerts.
+    </p>
 
-<section id="how-it-works">
+    <div class="workflow-grid">
+      <div class="workflow-card">
+        <div class="workflow-number">1</div>
+        <h3>User Login</h3>
+        <p>Users sign into the Trash Titans web app with a secure account.</p>
+      </div>
+      <div class="workflow-card">
+        <div class="workflow-number">2</div>
+        <h3>QR Code Scan</h3>
+        <p>The USB webcam scans a QR code attached to the waste item.</p>
+      </div>
+      <div class="workflow-card">
+        <div class="workflow-number">3</div>
+        <h3>Database Detection</h3>
+        <p>The JSON database identifies whether the waste is compost, recycle, garbage, or hazardous.</p>
+      </div>
+      <div class="workflow-card">
+        <div class="workflow-number">4</div>
+        <h3>AI Compost Detection</h3>
+        <p>The moisture sensor activates and Edge Impulse AI predicts healthy, dry, or too wet compost.</p>
+      </div>
+      <div class="workflow-card">
+        <div class="workflow-number">5</div>
+        <h3>Servo Motor Sorting</h3>
+        <p>The SG90 servo motor rotates the sorting flap automatically.</p>
+      </div>
+      <div class="workflow-card">
+        <div class="workflow-number">6</div>
+        <h3>LED Feedback System</h3>
+        <p>Green, yellow, and red LEDs display live compost conditions.</p>
+      </div>
+      <div class="workflow-card">
+        <div class="workflow-number">7</div>
+        <h3>Live Dashboard</h3>
+        <p>The dashboard updates instantly with waste statistics and AI predictions.</p>
+      </div>
+      <div class="workflow-card">
+        <div class="workflow-number">8</div>
+        <h3>Email Alerts</h3>
+        <p>Automatic email alerts are sent if compost becomes too dry, too wet, or hazardous waste is detected.</p>
+      </div>
+    </div>
 
-<p class="section-label">
-FULL AI SMART SYSTEM
-</p>
-
-<h2 class="section-title">
-How Trash Titans 2026 Works
-</h2>
-
-<p class="section-body">
-Trash Titans 2026 is a full AI-powered smart waste management platform
-that combines QR scanning, Edge Impulse AI, compost monitoring,
-servo motor automation, live dashboards, and smart alerts.
-</p>
-
-<div class="workflow-grid">
-
-<div class="workflow-card">
-<div class="workflow-number">1</div>
-<h3>User Login</h3>
-<p>Users sign into the Trash Titans web app with a secure account.</p>
+    <div class="features-grid" style="margin-top:5rem;">
+      <div class="feature-card">
+        <div class="feature-icon">🧠</div>
+        <div class="feature-title">Arduino UNO Q 4GB</div>
+        <p class="feature-desc">Main controller powering the entire smart waste management system.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📷</div>
+        <div class="feature-title">USB Webcam</div>
+        <p class="feature-desc">Scans QR codes and identifies waste instantly.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">💧</div>
+        <div class="feature-title">Moisture Sensor</div>
+        <p class="feature-desc">Detects compost health and moisture conditions in real time.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">⚙️</div>
+        <div class="feature-title">SG90 Servo Motor</div>
+        <p class="feature-desc">Automatically rotates the waste sorting flap.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🤖</div>
+        <div class="feature-title">Edge Impulse AI</div>
+        <p class="feature-desc">Predicts healthy, dry, or too wet compost conditions.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🚨</div>
+        <div class="feature-title">Smart Alerts</div>
+        <p class="feature-desc">Sends email alerts and activates LEDs and buzzer warnings.</p>
+      </div>
+    </div>
+  </section>
 </div>
 
-<div class="workflow-card">
-<div class="workflow-number">2</div>
-<h3>QR Code Scan</h3>
-<p>The USB webcam scans a QR code attached to the waste item.</p>
-</div>
-
-<div class="workflow-card">
-<div class="workflow-number">3</div>
-<h3>Database Detection</h3>
-<p>The JSON database identifies whether the waste is compost, recycle, garbage, or hazardous.</p>
-</div>
-
-<div class="workflow-card">
-<div class="workflow-number">4</div>
-<h3>AI Compost Detection</h3>
-<p>The moisture sensor activates and Edge Impulse AI predicts healthy, dry, or too wet compost.</p>
-</div>
-
-<div class="workflow-card">
-<div class="workflow-number">5</div>
-<h3>Servo Motor Sorting</h3>
-<p>The SG90 servo motor rotates the sorting flap automatically.</p>
-</div>
-
-<div class="workflow-card">
-<div class="workflow-number">6</div>
-<h3>LED Feedback System</h3>
-<p>Green, yellow, and red LEDs display live compost conditions.</p>
-</div>
-
-<div class="workflow-card">
-<div class="workflow-number">7</div>
-<h3>Live Dashboard</h3>
-<p>The dashboard updates instantly with waste statistics and AI predictions.</p>
-</div>
-
-<div class="workflow-card">
-<div class="workflow-number">8</div>
-<h3>Email Alerts</h3>
-<p>Automatic email alerts are sent if compost becomes too dry, too wet, or hazardous waste is detected.</p>
-</div>
-
-</div>
-
-<div class="features-grid" style="margin-top:5rem;">
-
-<div class="feature-card">
-<div class="feature-icon">🧠</div>
-<div class="feature-title">Arduino UNO Q 4GB</div>
-<p class="feature-desc">
-Main controller powering the entire smart waste management system.
-</p>
-</div>
-
-<div class="feature-card">
-<div class="feature-icon">📷</div>
-<div class="feature-title">USB Webcam</div>
-<p class="feature-desc">
-Scans QR codes and identifies waste instantly.
-</p>
-</div>
-
-<div class="feature-card">
-<div class="feature-icon">💧</div>
-<div class="feature-title">Moisture Sensor</div>
-<p class="feature-desc">
-Detects compost health and moisture conditions in real time.
-</p>
-</div>
-
-<div class="feature-card">
-<div class="feature-icon">⚙️</div>
-<div class="feature-title">SG90 Servo Motor</div>
-<p class="feature-desc">
-Automatically rotates the waste sorting flap.
-</p>
-</div>
-
-<div class="feature-card">
-<div class="feature-icon">🤖</div>
-<div class="feature-title">Edge Impulse AI</div>
-<p class="feature-desc">
-Predicts healthy, dry, or too wet compost conditions.
-</p>
-</div>
-
-<div class="feature-card">
-<div class="feature-icon">🚨</div>
-<div class="feature-title">Smart Alerts</div>
-<p class="feature-desc">
-Sends email alerts and activates LEDs and buzzer warnings.
-</p>
-</div>
-
-</div>
-
-</section>
-</div>
-
-<style>
-
-.workflow-grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
-  gap:1.5rem;
-  margin-top:4rem;
-}
-
-.workflow-card{
-  background:rgba(255,255,255,0.04);
-  border:1px solid rgba(255,255,255,0.08);
-  border-radius:14px;
-  padding:2rem;
-  transition:0.3s;
-}
-
-.workflow-card:hover{
-  transform:translateY(-6px);
-  border-color:#00ff88;
-  box-shadow:0 0 30px rgba(0,255,136,0.15);
-}
-
-.workflow-number{
-  width:45px;
-  height:45px;
-  border-radius:50%;
-  background:#00ff88;
-  color:#080820;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-weight:bold;
-  margin-bottom:1rem;
-}
-
-.workflow-card h3{
-  font-family:'Bebas Neue',sans-serif;
-  letter-spacing:.06em;
-  margin-bottom:.8rem;
-  font-size:1.5rem;
-}
-
-.workflow-card p{
-  color:rgba(255,255,255,0.7);
-  line-height:1.7;
-}
-
-</style>
-
-
-<!-- CTA -->
+<!-- ═══════════════════════════════════════ -->
+<!--                 CTA                    -->
+<!-- ═══════════════════════════════════════ -->
 <section id="cta">
   <div class="cta-inner">
     <p class="section-label" style="color:rgba(255,255,255,0.6);">Ready to learn more?</p>
@@ -780,14 +700,101 @@ Sends email alerts and activates LEDs and buzzer warnings.
       Trash Titans is on a mission to make composting smarter for everyone.
       Follow our journey and see how three students are changing the world, one bin at a time.
     </p>
-    <a href="https://www.trashtitans2026.ca" target="_blank" class="btn-primary">Visit trashtitans2026.ca</a>
+    <a href="https://www.trashtitans2026.ca" target="_blank" rel="noopener" class="btn-primary">Visit trashtitans2026.ca</a>
   </div>
 </section>
 
-<!-- FOOTER -->
+<!-- ═══════════════════════════════════════ -->
+<!--               FOOTER                   -->
+<!-- ═══════════════════════════════════════ -->
 <footer>
   © 2026 <span>Trash Titans</span> · Jonathan · Ashwin · Karikalan · Built with 💚 for the planet
 </footer>
+
+<!-- ═══════════════════════════════════════ -->
+<!--           LOADING SCREEN JS            -->
+<!-- ═══════════════════════════════════════ -->
+<script>
+(function () {
+  const messages = [
+    "Initializing systems...",
+    "Connecting to Arduino...",
+    "Calibrating moisture sensors...",
+    "Loading Edge Impulse AI...",
+    "Scanning QR database...",
+    "Activating servo motors...",
+    "Firing up the dashboard...",
+    "Ready to save the planet 🌍"
+  ];
+
+  const loader   = document.getElementById('tt-loader');
+  const bar      = document.getElementById('ltBar');
+  const pctEl    = document.getElementById('ltPct');
+  const statusEl = document.getElementById('ltStatus');
+  const progressBar = document.getElementById('ltProgressBar');
+  const orbsEl   = document.getElementById('ltOrbs');
+
+  // Spawn floating orbs
+  for (let i = 0; i < 14; i++) {
+    const orb  = document.createElement('div');
+    orb.className = 'lt-orb';
+    const size = 28 + Math.random() * 90;
+    orb.style.cssText = [
+      'width:'  + size + 'px',
+      'height:' + size + 'px',
+      'left:'   + Math.random() * 100 + '%',
+      'animation-duration:' + (4 + Math.random() * 7) + 's',
+      'animation-delay:'    + (Math.random() * 6)      + 's'
+    ].join(';');
+    orbsEl.appendChild(orb);
+  }
+
+  let msgIndex = 0;
+  const DURATION = 2400; // ms total for the loading bar
+  const start    = performance.now();
+
+  function setStatus(text) {
+    statusEl.style.opacity = '0';
+    setTimeout(function () {
+      statusEl.textContent = text;
+      statusEl.style.opacity = '1';
+    }, 180);
+  }
+
+  function tick(now) {
+    const elapsed  = now - start;
+    const progress = Math.min(100, Math.round((elapsed / DURATION) * 100));
+
+    bar.style.width        = progress + '%';
+    pctEl.textContent      = progress + '%';
+    progressBar.setAttribute('aria-valuenow', progress);
+
+    const target = Math.min(
+      messages.length - 1,
+      Math.floor((progress / 100) * messages.length)
+    );
+    if (target !== msgIndex) {
+      msgIndex = target;
+      setStatus(messages[msgIndex]);
+    }
+
+    if (progress < 100) {
+      requestAnimationFrame(tick);
+    } else {
+      setStatus(messages[messages.length - 1]);
+      setTimeout(function () {
+        loader.classList.add('hidden');
+        // Re-enable body scroll just in case
+        document.body.style.overflow = '';
+      }, 700);
+    }
+  }
+
+  // Prevent scroll while loading
+  document.body.style.overflow = 'hidden';
+  requestAnimationFrame(tick);
+})();
+</script>
 
 </body>
 </html>
