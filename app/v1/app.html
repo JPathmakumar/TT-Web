@@ -1,64 +1,236 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Trash Titans – Development in Progress · 2026</title>
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>What goes in the Green Bin? — Trash Titans</title>
+<style>
+  :root {
+    --soil: #1c1f16;
+    --leaf: #4a7c2f;
+    --leaf-bright: #7cb342;
+    --paper: #f2efe4;
+    --paper-dim: #c9c4b0;
+    --rot: #8a5a3b;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--soil);
+    color: var(--paper);
+    font-family: 'Courier New', ui-monospace, monospace;
+    min-height: 100vh;
+  }
+
+  header {
+    padding: 28px 20px 20px;
+    border-bottom: 2px solid var(--leaf);
+  }
+
+  .eyebrow {
+    font-size: 12px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--leaf-bright);
+    margin: 0 0 6px;
+  }
+
+  h1 {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 28px;
+    line-height: 1.15;
+    margin: 0 0 8px;
+    color: var(--paper);
+  }
+
+  header p {
+    margin: 0;
+    color: var(--paper-dim);
+    font-size: 14px;
+    max-width: 60ch;
+  }
+
+  .search-wrap {
+    padding: 16px 20px;
+    position: sticky;
+    top: 0;
+    background: var(--soil);
+    z-index: 10;
+    border-bottom: 1px solid #333;
+  }
+
+  #search {
+    width: 100%;
+    padding: 14px 16px;
+    font-size: 16px;
+    font-family: inherit;
+    background: #262a1d;
+    border: 1px solid var(--leaf);
+    border-radius: 4px;
+    color: var(--paper);
+  }
+
+  #search::placeholder { color: var(--paper-dim); }
+  #search:focus { outline: 2px solid var(--leaf-bright); outline-offset: 1px; }
+
+  .status {
+    padding: 8px 20px 0;
+    font-size: 12px;
+    color: var(--paper-dim);
+  }
+
+  #list {
+    list-style: none;
+    margin: 0;
+    padding: 8px 20px 60px;
+  }
+
+  .item {
+    display: flex;
+    gap: 12px;
+    align-items: baseline;
+    padding: 14px 0;
+    border-bottom: 1px solid #2e321f;
+  }
+
+  .item .name {
+    font-family: Georgia, serif;
+    font-size: 16px;
+    color: var(--paper);
+    flex: 1;
+  }
+
+  .item .instructions {
+    display: block;
+    font-size: 12px;
+    color: var(--paper-dim);
+    margin-top: 4px;
+  }
+
+  .tag {
+    flex-shrink: 0;
+    font-size: 10px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    background: var(--leaf);
+    color: var(--soil);
+    padding: 3px 8px;
+    border-radius: 100px;
+    font-weight: bold;
+  }
+
+  .empty, .loading, .error {
+    padding: 40px 20px;
+    text-align: center;
+    color: var(--paper-dim);
+  }
+
+  .error { color: var(--rot); }
+
+  footer {
+    padding: 20px;
+    text-align: center;
+    font-size: 11px;
+    color: var(--paper-dim);
+    border-top: 1px solid #2e321f;
+  }
+
+  footer a { color: var(--leaf-bright); }
+</style>
 </head>
 <body>
-  <div class="page-bg">
-    <div class="grid-overlay"></div>
-    <div class="scanline"></div>
-  </div>
 
-  <nav>
-    <a href="#" class="nav-logo">
-      <span class="robot-icon">🤖</span>
-      TRASH TITANS
-    </a>
-    <span class="nav-tag">Grade 5 &amp; 6 · Toronto · 2026</span>
-  </nav>
+<header>
+  <p class="eyebrow">Trash Titans · Scan &amp; Sort</p>
+  <h1>What goes in the Green Bin?</h1>
+  <p>Search any item below to see if it's accepted in Toronto's Green Bin (organics/compost) program, sourced from the City of Toronto's Waste Wizard data.</p>
+</header>
 
-  <main class="dev-page">
-    <div class="dev-card">
-      <div class="status-badge">
-        <span class="status-dot"></span>
-        Live Build
-      </div>
+<div class="search-wrap">
+  <input id="search" type="text" inputmode="search" placeholder="Search an item, e.g. 'coffee pod', 'banana peel'…" autofocus>
+</div>
 
-      <div class="dev-icon" aria-hidden="true">🤖</div>
+<div class="status" id="status"></div>
 
-      <p class="dev-eyebrow">Trash Titans Web App</p>
-      <h1 class="dev-title">Development <em>In Progress</em></h1>
-      <p class="dev-sub">
-        We're building something awesome — smart compost monitoring powered by AI and Arduino Uno Q.
-        Check back soon.
-      </p>
+<ul id="list"></ul>
 
-      <div class="progress-block">
-        <div class="progress-label">
-          <span>Build status</span>
-          <span id="progress-percent">0%</span>
+<footer>
+  Data: City of Toronto Waste Wizard (Open Data) · Updated quarterly ·
+  <a href="https://www.toronto.ca/services-payments/recycling-organics-garbage/houses/what-goes-in-my-green-bin/" target="_blank" rel="noopener">Full City guidelines</a>
+</footer>
+
+<script>
+(function () {
+  const API_URL = "/api/compost-items"; // same-origin endpoint served by your backend
+  const listEl = document.getElementById("list");
+  const statusEl = document.getElementById("status");
+  const searchEl = document.getElementById("search");
+
+  let allItems = [];
+
+  function render(items) {
+    listEl.innerHTML = "";
+
+    if (items.length === 0) {
+      listEl.innerHTML = '<li class="empty">No matching item found. When unsure, check the ' +
+        '<a href="https://www.toronto.ca/services-payments/recycling-organics-garbage/waste-wizard/" ' +
+        'target="_blank" rel="noopener" style="color:#7cb342;">City Waste Wizard</a> directly, or use the garbage bin.</li>';
+      return;
+    }
+
+    const frag = document.createDocumentFragment();
+    items.forEach((it) => {
+      const li = document.createElement("li");
+      li.className = "item";
+      li.innerHTML = `
+        <div style="flex:1;">
+          <span class="name">${escapeHtml(it.item)}</span>
+          ${it.instructions ? `<span class="instructions">${escapeHtml(it.instructions)}</span>` : ""}
         </div>
-        <div class="progress-track">
-          <div class="progress-fill" id="progress-fill"></div>
-        </div>
-      </div>
+        <span class="tag">Green Bin</span>
+      `;
+      frag.appendChild(li);
+    });
+    listEl.appendChild(frag);
+  }
 
-      <ul class="dev-features">
-        <li><span class="feature-icon">✓</span> Sensor dashboard</li>
-        <li><span class="feature-icon pending">◦</span> AI compost analysis</li>
-        <li><span class="feature-icon pending">◦</span> Team login portal</li>
-      </ul>
+  function escapeHtml(str) {
+    const div = document.createElement("div");
+    div.textContent = str;
+    return div.innerHTML;
+  }
 
-      <p class="dev-footer">
-        Smart compost monitoring · Arduino Uno Q · 2026
-      </p>
-    </div>
-  </main>
+  function filterAndRender(query) {
+    const q = query.trim().toLowerCase();
+    const filtered = q ? allItems.filter((it) => it.item.toLowerCase().includes(q)) : allItems;
+    render(filtered.slice(0, 200)); // cap render for very broad/empty queries
+    statusEl.textContent = q
+      ? `${filtered.length} match${filtered.length === 1 ? "" : "es"} for "${query}"`
+      : `${allItems.length} items accepted in the Green Bin`;
+  }
 
-  <script src="script.js"></script>
+  async function loadItems() {
+    statusEl.textContent = "Loading Green Bin items…";
+    listEl.innerHTML = '<li class="loading">Loading…</li>';
+    try {
+      const res = await fetch(API_URL);
+      if (!res.ok) throw new Error(`Server responded ${res.status}`);
+      const data = await res.json();
+      allItems = data.items || [];
+      filterAndRender("");
+    } catch (err) {
+      listEl.innerHTML = `<li class="error">Couldn't load the Green Bin list right now (${escapeHtml(err.message)}). Please try again shortly.</li>`;
+      statusEl.textContent = "";
+    }
+  }
+
+  searchEl.addEventListener("input", (e) => filterAndRender(e.target.value));
+
+  loadItems();
+})();
+</script>
+
 </body>
 </html>
