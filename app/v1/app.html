@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>What goes in the Green Bin? — Trash Titans</title>
+
 <style>
   :root {
     --soil: #1c1f16;
@@ -40,9 +41,7 @@
   h1 {
     font-family: Georgia, 'Times New Roman', serif;
     font-size: 28px;
-    line-height: 1.15;
     margin: 0 0 8px;
-    color: var(--paper);
   }
 
   header p {
@@ -63,22 +62,12 @@
 
   #search {
     width: 100%;
-    padding: 14px 16px;
+    padding: 14px;
     font-size: 16px;
-    font-family: inherit;
     background: #262a1d;
     border: 1px solid var(--leaf);
     border-radius: 4px;
     color: var(--paper);
-  }
-
-  #search::placeholder { color: var(--paper-dim); }
-  #search:focus { outline: 2px solid var(--leaf-bright); outline-offset: 1px; }
-
-  .status {
-    padding: 8px 20px 0;
-    font-size: 12px;
-    color: var(--paper-dim);
   }
 
   #list {
@@ -89,81 +78,62 @@
 
   .item {
     display: flex;
+    justify-content: space-between;
     gap: 12px;
-    align-items: baseline;
     padding: 14px 0;
     border-bottom: 1px solid #2e321f;
   }
 
-  .item .name {
+  .name {
     font-family: Georgia, serif;
-    font-size: 16px;
-    color: var(--paper);
-    flex: 1;
-  }
-
-  .item .instructions {
-    display: block;
-    font-size: 12px;
-    color: var(--paper-dim);
-    margin-top: 4px;
   }
 
   .tag {
-    flex-shrink: 0;
     font-size: 10px;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
     background: var(--leaf);
     color: var(--soil);
     padding: 3px 8px;
-    border-radius: 100px;
+    border-radius: 999px;
     font-weight: bold;
   }
 
-  .empty, .loading, .error {
+  .status {
+    padding: 8px 20px;
+    font-size: 12px;
+    color: var(--paper-dim);
+  }
+
+  .error, .loading {
     padding: 40px 20px;
     text-align: center;
     color: var(--paper-dim);
   }
-
-  .error { color: var(--rot); }
-
-  footer {
-    padding: 20px;
-    text-align: center;
-    font-size: 11px;
-    color: var(--paper-dim);
-    border-top: 1px solid #2e321f;
-  }
-
-  footer a { color: var(--leaf-bright); }
 </style>
 </head>
+
 <body>
 
 <header>
-  <p class="eyebrow">Trash Titans · Scan &amp; Sort</p>
+  <p class="eyebrow">Trash Titans · Scan & Sort</p>
   <h1>What goes in the Green Bin?</h1>
-  <p>Search any item below to see if it's accepted in Toronto's Green Bin (organics/compost) program, sourced from the City of Toronto's Waste Wizard data.</p>
+  <p>Search compost items from the City of Toronto Waste Wizard dataset.</p>
 </header>
 
 <div class="search-wrap">
-  <input id="search" type="text" inputmode="search" placeholder="Search an item, e.g. 'coffee pod', 'banana peel'…" autofocus>
+  <input id="search" placeholder="Search e.g. banana peel, coffee grounds..." />
 </div>
 
 <div class="status" id="status"></div>
-
 <ul id="list"></ul>
-
-<footer>
-  Data: City of Toronto Waste Wizard (Open Data) · Updated quarterly ·
-  <a href="https://www.toronto.ca/services-payments/recycling-organics-garbage/houses/what-goes-in-my-green-bin/" target="_blank" rel="noopener">Full City guidelines</a>
-</footer>
 
 <script>
 (function () {
-  const API_URL = "/api/compost-items"; // same-origin endpoint served by your backend
+
+  const PACKAGE_URL =
+    "https://ckan0.cf.opendata.inter.prod-toronto.ca/api/3/action/package_show?id=waste-wizard-lookup-table";
+
+  const GREEN_BIN_MARKERS = ["green bin", "organics", "compost"];
+
   const listEl = document.getElementById("list");
   const statusEl = document.getElementById("status");
   const searchEl = document.getElementById("search");
@@ -174,61 +144,91 @@
     listEl.innerHTML = "";
 
     if (items.length === 0) {
-      listEl.innerHTML = '<li class="empty">No matching item found. When unsure, check the ' +
-        '<a href="https://www.toronto.ca/services-payments/recycling-organics-garbage/waste-wizard/" ' +
-        'target="_blank" rel="noopener" style="color:#7cb342;">City Waste Wizard</a> directly, or use the garbage bin.</li>';
+      listEl.innerHTML = `<li class="loading">No items found.</li>`;
       return;
     }
 
     const frag = document.createDocumentFragment();
-    items.forEach((it) => {
+
+    items.forEach(it => {
       const li = document.createElement("li");
       li.className = "item";
+
       li.innerHTML = `
-        <div style="flex:1;">
-          <span class="name">${escapeHtml(it.item)}</span>
-          ${it.instructions ? `<span class="instructions">${escapeHtml(it.instructions)}</span>` : ""}
-        </div>
+        <span class="name">${escapeHtml(it.item)}</span>
         <span class="tag">Green Bin</span>
       `;
+
       frag.appendChild(li);
     });
+
     listEl.appendChild(frag);
   }
 
   function escapeHtml(str) {
-    const div = document.createElement("div");
-    div.textContent = str;
-    return div.innerHTML;
+    return String(str).replace(/[&<>"']/g, m => ({
+      "&":"&amp;",
+      "<":"&lt;",
+      ">":"&gt;",
+      '"':"&quot;",
+      "'":"&#039;"
+    }[m]));
   }
 
-  function filterAndRender(query) {
-    const q = query.trim().toLowerCase();
-    const filtered = q ? allItems.filter((it) => it.item.toLowerCase().includes(q)) : allItems;
-    render(filtered.slice(0, 200)); // cap render for very broad/empty queries
-    statusEl.textContent = q
-      ? `${filtered.length} match${filtered.length === 1 ? "" : "es"} for "${query}"`
-      : `${allItems.length} items accepted in the Green Bin`;
+  function filter(q) {
+    q = q.toLowerCase();
+    const filtered = allItems.filter(x =>
+      x.item.toLowerCase().includes(q)
+    );
+    render(filtered);
+    statusEl.textContent = `${filtered.length} matches`;
   }
 
-  async function loadItems() {
-    statusEl.textContent = "Loading Green Bin items…";
-    listEl.innerHTML = '<li class="loading">Loading…</li>';
+  async function load() {
     try {
-      const res = await fetch(API_URL);
-      if (!res.ok) throw new Error(`Server responded ${res.status}`);
-      const data = await res.json();
-      allItems = data.items || [];
-      filterAndRender("");
-    } catch (err) {
-      listEl.innerHTML = `<li class="error">Couldn't load the Green Bin list right now (${escapeHtml(err.message)}). Please try again shortly.</li>`;
+      statusEl.textContent = "Loading data...";
+
+      const pkg = await fetch(PACKAGE_URL);
+      const pkgJson = await pkg.json();
+
+      const resource = pkgJson.result.resources.find(r => r.format === "JSON");
+
+      const meta = await fetch(
+        "https://ckan0.cf.opendata.inter.prod-toronto.ca/api/3/action/resource_show?id=" +
+        resource.id
+      );
+
+      const metaJson = await meta.json();
+
+      const dataRes = await fetch(metaJson.result.url);
+      const raw = await dataRes.json();
+
+      const records = Array.isArray(raw) ? raw : (raw.data || raw.items || []);
+
+      allItems = records
+        .map(r => {
+          const text = Object.values(r).join(" ").toLowerCase();
+          const name = Object.values(r)[0];
+          return { item: name, raw: text };
+        })
+        .filter(x =>
+          GREEN_BIN_MARKERS.some(m => x.raw.includes(m))
+        );
+
+      statusEl.textContent = `${allItems.length} Green Bin items loaded`;
+      render(allItems);
+
+    } catch (e) {
+      console.error(e);
       statusEl.textContent = "";
+      listEl.innerHTML = `<li class="error">Failed to load data. Try again later.</li>`;
     }
   }
 
-  searchEl.addEventListener("input", (e) => filterAndRender(e.target.value));
+  searchEl.addEventListener("input", e => filter(e.target.value));
 
-  loadItems();
+  load();
+
 })();
 </script>
 
